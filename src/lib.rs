@@ -2,12 +2,13 @@ pub mod rpc {
     // use lsp_types::{ClientCapabilities, InitializeParams};
     // use serde::{Deserialize, Serialize};
 
-    // pub type LSPAny = serde_json::Value;
+    pub type LSPAny = serde_json::Value;
     // pub type LSPObject = std::collections::HashMap<String, LSPAny>;
 
     pub use tower_lsp::jsonrpc::Result;
     pub use tower_lsp::lsp_types::*;
     pub use tower_lsp::{Client, LanguageServer, LspService, Server};
+    pub use tracing::{debug, error, info, warn};
     pub use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 
     #[derive(Debug)]
@@ -25,6 +26,7 @@ pub mod rpc {
     #[tower_lsp::async_trait]
     impl LanguageServer for Backend {
         async fn initialize(&self, _: InitializeParams) -> Result<InitializeResult> {
+            info!("initialising...");
             Ok(InitializeResult {
                 server_info: Some(ServerInfo {
                     name: String::from("Linga LS"),
@@ -69,13 +71,30 @@ pub mod rpc {
         }
 
         async fn initialized(&self, _: InitializedParams) {
+            info!("server initialised!");
             self.client
-                .log_message(MessageType::INFO, "server initialized!")
+                .log_message(MessageType::INFO, "server initialised!")
                 .await;
         }
 
         async fn shutdown(&self) -> Result<()> {
             Ok(())
+        }
+
+        async fn did_open(&self, params: DidOpenTextDocumentParams) {
+            debug!("file opened");
+            // self.on_change(TextDocumentItem {
+            //     uri: params.text_document.uri,
+            //     text: &params.text_document.text,
+            //     version: Some(params.text_document.version),
+            //     language_id: format!("Lingua LS - {:?}", self.language),
+            // })
+            // .await
+        }
+
+        async fn execute_command(&self, params: ExecuteCommandParams) -> Result<Option<LSPAny>> {
+            info!("got command: {:#?}", params);
+            Ok(None)
         }
     }
 }
