@@ -1,0 +1,6 @@
+#!/bin/bash
+
+while true; do
+  cat logs/*.log
+  sleep 0.5
+done
