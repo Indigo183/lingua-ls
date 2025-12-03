@@ -5,6 +5,7 @@ pub mod rpc {
     pub type LSPAny = serde_json::Value;
     // pub type LSPObject = std::collections::HashMap<String, LSPAny>;
 
+    use tokio::sync::Mutex;
     pub use tower_lsp::jsonrpc::Result;
     pub use tower_lsp::lsp_types::*;
     pub use tower_lsp::{Client, LanguageServer, LspService, Server};
@@ -21,6 +22,7 @@ pub mod rpc {
     pub struct Backend {
         pub client: Client,
         pub language: Language,
+        pub content: Mutex<Vec<String>>,
     }
 
     #[tower_lsp::async_trait]
@@ -34,7 +36,9 @@ pub mod rpc {
                 }),
                 capabilities: ServerCapabilities {
                     position_encoding: None,
-                    text_document_sync: None,
+                    text_document_sync: Some(TextDocumentSyncCapability::Kind(
+                        TextDocumentSyncKind::FULL,
+                    )),
                     selection_range_provider: None,
                     hover_provider: None,
                     completion_provider: None,
@@ -82,14 +86,39 @@ pub mod rpc {
         }
 
         async fn did_open(&self, params: DidOpenTextDocumentParams) {
-            debug!("file opened");
-            // self.on_change(TextDocumentItem {
-            //     uri: params.text_document.uri,
-            //     text: &params.text_document.text,
-            //     version: Some(params.text_document.version),
-            //     language_id: format!("Lingua LS - {:?}", self.language),
-            // })
-            // .await
+            info!(
+                "file opened: \n{}",
+                params
+                    .text_document
+                    .text
+                    .lines()
+                    .map(|line| format!("| {line}\n"))
+                    .collect::<String>()
+            );
+
+            *self.content.lock().await = params
+                .text_document
+                .text
+                .lines()
+                .map(String::from)
+                .collect();
+        }
+
+        async fn did_change(&self, params: DidChangeTextDocumentParams) {
+            info!(
+                "file opened: \n{}",
+                params.content_changes[0]
+                    .text
+                    .lines()
+                    .map(|line| format!("| {line}\n"))
+                    .collect::<String>()
+            );
+
+            *self.content.lock().await = params.content_changes[0]
+                .text
+                .lines()
+                .map(String::from)
+                .collect();
         }
 
         async fn execute_command(&self, params: ExecuteCommandParams) -> Result<Option<LSPAny>> {

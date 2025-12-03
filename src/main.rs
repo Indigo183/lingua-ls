@@ -1,5 +1,6 @@
+use tokio::sync::Mutex;
 use tower_lsp::{LspService, Server};
-use tracing::info;
+use tracing::{debug, error, info, warn};
 
 use lingua_ls::rpc::*;
 
@@ -17,11 +18,13 @@ async fn main() {
         .with_writer(non_blocking)
         .init();
 
-    info!("Starting LSP server");
+    debug!("debug mode active");
+    info!("starting LSP server");
 
     let (service, socket) = LspService::new(|client| Backend {
         client,
         language: Language::English,
+        content: Mutex::new(Vec::new()),
     });
     Server::new(stdin, stdout, socket).serve(service).await;
 }

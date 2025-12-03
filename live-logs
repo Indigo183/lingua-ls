@@ -1,6 +1,7 @@
 #!/bin/bash
 
 while true; do
+  printf "\033[2J\033[H"
   cat logs/*.log
-  sleep 0.5
+  sleep 0.2
 done
