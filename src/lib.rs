@@ -121,6 +121,10 @@ pub mod rpc {
                 .collect();
         }
 
+        async fn did_save(&self, params: DidSaveTextDocumentParams) {
+            info!("file saved to path {}", params.text_document.uri);
+        }
+
         async fn execute_command(&self, params: ExecuteCommandParams) -> Result<Option<LSPAny>> {
             info!("got command: {:#?}", params);
             Ok(None)
