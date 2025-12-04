@@ -31,7 +31,7 @@ pub mod rpc {
             info!("initialising...");
             Ok(InitializeResult {
                 server_info: Some(ServerInfo {
-                    name: String::from("Linga LS"),
+                    name: String::from("Lingua LS"),
                     version: Some(String::from("pre-alpha")),
                 }),
                 capabilities: ServerCapabilities {
