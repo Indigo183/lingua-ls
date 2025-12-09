@@ -41,7 +41,17 @@ pub mod rpc {
                     )),
                     selection_range_provider: None,
                     hover_provider: None,
-                    completion_provider: None,
+                    completion_provider: Some(CompletionOptions {
+                        resolve_provider: None,
+                        trigger_characters: Some(('A'..'Z').map(String::from).collect()),
+                        all_commit_characters: None,
+                        work_done_progress_options: WorkDoneProgressOptions {
+                            work_done_progress: None,
+                        },
+                        completion_item: Some(CompletionOptionsCompletionItem {
+                            label_details_support: Some(true),
+                        }),
+                    }),
                     signature_help_provider: None,
                     definition_provider: None,
                     type_definition_provider: None,
@@ -123,6 +133,15 @@ pub mod rpc {
 
         async fn did_save(&self, params: DidSaveTextDocumentParams) {
             info!("file saved to path {}", params.text_document.uri);
+        }
+
+        async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
+            info!("completion requested: {:#?}", params);
+            let _context = params.context.unwrap_or_else(|| {
+                error!("no completion context provided");
+                panic!("no completion context provided")
+            });
+            Ok(None)
         }
 
         async fn execute_command(&self, params: ExecuteCommandParams) -> Result<Option<LSPAny>> {
