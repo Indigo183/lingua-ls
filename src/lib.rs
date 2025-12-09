@@ -22,7 +22,7 @@ pub mod rpc {
     pub struct Backend {
         pub client: Client,
         pub language: Language,
-        pub content: Mutex<Vec<String>>,
+        pub content: Mutex<Vec<String>>, // lines
     }
 
     #[tower_lsp::async_trait]
@@ -106,7 +106,7 @@ pub mod rpc {
 
         async fn did_change(&self, params: DidChangeTextDocumentParams) {
             info!(
-                "file opened: \n{}",
+                "file changed: \n{}",
                 params.content_changes[0]
                     .text
                     .lines()
